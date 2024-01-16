@@ -531,3 +531,4 @@
 2024-01-03 13:07:37,754 [INFO] McuFinderGlobals:63 - Set McuFinder mode to 2 (CubeIDE integrated)
 2024-01-03 13:07:37,754 [INFO] UserAuth:179 - activating auth plugin
 2024-01-03 13:07:37,756 [INFO] UserAuth:393 - Internet connection configuration mode: 1
+2024-01-03 17:32:49,930 [ERROR] LogOutputStream:75 - [STDERR_REDIRECT] 
