@@ -1,0 +1,10 @@
+08:41:16 **** Incremental Build of configuration Debug for project dryer ****
+make -j12 all 
+arm-none-eabi-size  dryer.elf 
+   text	   data	    bss	    dec	    hex	filename
+   4700	     12	   1572	   6284	   188c	dryer.elf
+Finished building: default.size.stdout
+ 
+
+08:41:16 Build Finished. 0 errors, 0 warnings. (took 331ms)
+
