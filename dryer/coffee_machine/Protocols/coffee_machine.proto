@@ -1,0 +1,296 @@
+syntax = "proto3";
+
+package RemoteApiRs232;
+
+option java_package = "com.thp.remoteapi_rs232";
+option java_outer_classname = "ApiMessageProtos";
+
+message ApiMessage {
+    uint32 protocol_version = 1; // currently always with value 1
+    uint32 sequence_id = 2;      // wrap around to 0 at 255; i.e. it is treated as uint8
+    
+    // The api_messages are separated into 4 categories with a certain value range
+    // 0x1000 - 0x1FFF: Request messages
+    // 0x4000 - 0x4FFF: Response messages where response 0x4nnn belongs to request 0x1nnn
+    // 0x8000 - 0x8FFF: Event messages
+    // 0xc000 - 0xcFFF: Response messages not relatable to a specific request message
+    oneof api_message {
+        StartProduct start_product = 0x1001;
+        GetProductList get_product_list = 0x1002;
+        CancelProduct cancel_product = 0x1003;
+        GetAvailableProductIds get_available_product_ids = 0x1004;
+        GetActiveEvents get_active_events = 0x1005;
+        ForceRinse force_rinse = 0x1006;
+        PostponeRinse postpone_rinse = 0x1007;
+        StartProductCategoryByName start_product_category_by_name = 0x1008;
+        GetSwVersion get_sw_version = 0x1009;
+
+        ProductStarted product_started = 0x4001;
+        ProductList product_list = 0x4002;
+        ProductCancelled product_cancelled = 0x4003;
+        AvailableProductIds available_product_ids = 0x4004;
+        ActiveEvents active_events = 0x4005;
+        RinseForced rinse_forced = 0x4006;
+        RinsePostponed rinse_postponed = 0x4007;
+        ProductCategoryByNameStarted product_category_by_name_started = 0x4008;
+        SwVersion sw_version = 0x4009;
+
+        ErrorEvent error_event = 0x8000;
+        ProductFinished product_finishied = 0x8001;
+        ProductAvailabilityChanged Product_availability_changed = 0x8002;
+        RinsingUpcoming rinsing_upcoming = 0x8003;
+        RinseStarted rinse_started = 0x8004;
+
+        UnknownMessage unknown_message = 0xc000;
+        WrongCrc wrong_crc = 0xc001;
+        BrokenMessage broken_message = 0xc002;
+    }
+    // the API message is followed by two bytes in big endian byte order
+    // that cotain a CRC16 for this message. The CRC polynomial is 0xC86C
+    // and an initial value of 0xffff is used.
+    // This CRC is not considered to be part of the ApiMessage and has to
+    // be removed prior to parsing the message with protobuf
+}
+
+enum ResponseCode {
+    UNKOWN_RESPONSE_CODE = 0;     // Place holder for protobuf
+    SUCCESS = 1;                  // The request succeeded
+    INALID_PARAMETER = 2;         // One of the given parameters is invalid
+    DBUS_ADAPTER_ERROR = 3;       // A failure occured in the communication between the remote API comonent and the Application
+    GENERAL_ERROR = 4;            // The request failed due to not further specified issues
+    SERVICE_LIMITED = 5;          // The request might be valid but the cloud connection was cut longer than allowed and thus the service is now only limited
+    SYSTEM_BUSY = 100;            // The application is currently completing another request and can't execute this request
+    UNKOWN_PRODUCT_ID = 101;      // The product id specified in a request is not known
+    PRODUCT_NOT_AVAILABLE = 102;  // The product is known but cannot be poured at the moment
+    PRODUCT_ID_NOT_POURING = 103; // The product ID requested to cancel is not pouring at the moment
+    MAX_POSTPONE_NUM_REACHED = 104; // The maximum number of rinse postponements 15 reached
+    NO_RINSING_UPCOMING = 105; // No rinsing is upcoming and thus nothing will be postponed
+}
+
+/**
+ * Request to start pouring a new product. The matching response is the
+ * 'ProductStarted' message.
+ */
+message StartProduct {
+    string prudct_id = 1;       // The product id of the product to be started
+    double start_delay_s = 2;    // A delay after which the pouring should start
+}
+
+/**
+ * Request to cancel a pouring product. The matching response is the
+ * 'ProductCancelled' message.
+ */
+message CancelProduct {
+    string product_id = 1;      // The product id of the product to be cancelled
+    double cancel_delay_s = 2;  // A dely after which the cancellation should start
+}
+
+/**
+ * Request to start pouring a new product category. The matching response is the
+ * 'ProductCategoryByNameStarted' message.
+*/
+message StartProductCategoryByName {
+    string product_name = 1;    // The product category name of the product to be started
+    double start_delay_s = 2;   // A delay after which the pouring should start
+}
+
+/**
+ * Request to get a List of all known products with their ids and product names.
+ * The matching response is the 'ProductlList’ message.
+ */
+message GetProductList { }
+
+/**
+ * Request to get a List of all available product ids.
+ * The matching response is the 'AvailableProductIds' message.
+ */
+message GetAvailableProductIds { }
+
+ /**
+  * Request to get a List of all active events.
+  * The matching response is the 'ActiveEvents' message.
+  */
+message GetActiveEvents { }
+
+/**
+ * Request to force a rinse now.
+ * The matching response 15 the 'RinseForced’ message.
+ */
+message ForceRinse { }
+
+/**
+ * Request to postpone the next upcoming rinse by the specified number of milliseconds.
+ * The matching response is the 'RinsePostponed’ message.
+ */
+message PostponeRinse {
+    uint32 milliseconds = 1;    // Number of milliseconds the next rinse is postponed.
+                                // PostponeRinse command can be executed maximum three times,
+                                //after that the coffee machine will perform the rinse.
+}
+
+/**
+ * Request to get the current SW version.
+ * The matching response is the 'SwVersion' message.
+ */
+message GetSwVersion { }
+
+/**
+ * Response message for the 'StartProduct' message.
+ *
+ * The response_code shows whether the start was successful or not. Once
+ * the product has completed pouring
+ */
+message ProductStarted {
+    ResponseCode response_code = 1;
+}
+
+/**
+ * Response message for the 'StartProductCategoryByName' message.
+ *
+ * The response_code shows whether the start was successful or not. Once
+ * the product has completed pouring
+ */
+message ProductCategoryByNameStarted {
+    ResponseCode response_code = 1;
+}
+
+/**
+ * Response message for the 'CancelProduct' message.
+ *
+ * The response_code shows whether the cancellation was successful or not. Once
+ * the product has completed cancelling
+ */
+message ProductCancelled {
+    ResponseCode response_code = 1;
+}
+
+message ProductList {
+    // The response_code shows whether the 'GetProductlList' request
+    // was successfull
+    ResponseCode response_code = 1;
+    // key contains the product names as shown on the UI, value
+    // contains the product 10 needed by the 'StartProduct’ message
+    map<string, string> product_list = 2;
+}
+
+message AvailableProductIds {
+    // The response_code shows whether the 'GetAvailableProductIds' request
+    // was successfull
+    ResponseCode response_code = 1;
+    // list contains the product ids
+    repeated string available_product_ids = 2;
+}
+
+message ActiveEvents {
+    // The response_code shows whether the 'GetActiveEvents' request
+    // was successfull
+    ResponseCode response_code = 1;
+    // list contains tuples of the number, title and source index of events
+    repeated ErrorEvent active_events = 2;
+}
+
+message RinseForced {
+    // The response_code shows whether the 'ForceRinse’ request
+    // was successfull
+    ResponseCode response_code = 1;
+}
+
+message RinsePostponed {
+    // The response_code shows whether the 'PostponeRinse’ request
+    // was successfull
+    ResponseCode response_code = 1;
+}
+
+message SwVersion {
+    // The response_code shows whether the 'GetSwVersion' request
+    // was successfull
+    ResponseCode response_code = 1;
+    // list contains the product ids
+    string sw_version = 2;
+}
+
+/**
+ * A message indicating a status change on the coffee machine. The meaning
+ * of the error numbers is described in a separate place. The numbers
+ * consist of error conditions as well 05 the disappearance of such error
+ * conditions.
+ * The 'tittle' field contains an english error message that describes
+ * the error condition related to the 'error_number'.
+ * The 'source_index' may contain more details in case the component
+ * causing the error exists multiple times. For example when 0 bean hopper
+ * is removed, the 'source_index' will tell you, which bean hopper was
+ * removed (0 or 1). In these 60565 the 'title’ will usually contain a '%1'
+ * at the place where 'source_index' should be included.
+ */
+message ErrorEvent {
+    uint32 error_number = 1;    // number identifying the error condition
+    string title = 2;           // text describing the error related to the error number
+    uint32 source_index = 3;    // index describing the source of the error in some more details
+}
+
+/**
+ * Event to tell the remote client when a product has finished. Such
+ * events are sent for products started through the API as well as
+ * any products or rinse-operations started through the UI.
+ */
+message ProductFinished {
+    // The product 10 of the product that has finished
+    string product_id = 1;
+    // A flag indicating whether the product was poured successfully
+    bool success = 2;
+}
+/**
+* Event message indicating the changed availability of products.
+* Unavailable products are still known on the machine, however
+* when trying to the start such a product, the machine will report
+* PRODUCT_NOT_AVAILABLE. The reason for a product not being
+* available is usually someting Like an empty milk container, a
+* boiler temperature that has not yet been reached. A corresponding
+* Errortvent has then been sent as well.
+* The field 'product_ids’ will always contain a complete List of
+* available products. Thus the unavailable products will be the
+*List of products reported by 'ProductlList’ without those in the
+* 'ProductAvailabilityChanged’ message.
+*/
+message ProductAvailabilityChanged {
+    repeated string product_ids = 1;
+}
+
+/**
+ * Informs in how many milliseconds the 607766 machine is about
+ * to execute a rinse operation. During the rinse operation any
+ * attempt 60 start a product will return a SYSTEM_BUSY status.
+ */
+message RinsingUpcoming {
+    uint32 start_in_ms = 1; // Number in milliseconds when rinse will be started
+}
+
+/**
+ * A rinse operation is imminent or was just started. In case of
+ * an automatically triggered rinse, the user is now presented with
+ * a warning dialog for 5s before the actual rinsing takes place.
+ * In case of a rinse triggered through the 'ForceRinse' message
+ * or by pushing the corresponding button on the UI, the rinsing
+ * is started simultaneously with this message.
+ */
+message RinseStarted {  
+}
+
+/**
+ * The remote control service has received a message with
+ * a message id that is not currently supported.
+ */
+message UnknownMessage { }
+
+/**
+ * The remote control service has received a message with
+ * an invalid CRC value. No operation was executed.
+ */
+message WrongCrc { }
+
+/**
+ * The remote control service has received a message with
+ * a valid CRC value but the contained message could not
+ * be parsed according to this protobuf description
+ */
+message BrokenMessage { }
