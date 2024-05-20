@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">&#x0A;<refactoring comment="Delete resource &apos;dryer/Core/Src/fefe.c&apos;" deleteContents="false" description="Delete resource &apos;dryer/Core/Src/fefe.c&apos;" element1="/dryer/Core/Src/fefe.c" flags="7" id="org.eclipse.ltk.core.refactoring.delete.resources" resources="1" stamp="1716194955149"/>&#x0A;<refactoring comment="Delete resource &apos;dryer/Core/Src/fnd_controller.h&apos;" deleteContents="false" description="Delete resource &apos;dryer/Core/Src/fnd_controller.h&apos;" element1="/dryer/Core/Src/fnd_controller.h" flags="7" id="org.eclipse.ltk.core.refactoring.delete.resources" resources="1" stamp="1716194967713"/>
+</session>

@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">&#x0A;<refactoring comment="Rename resource &apos;dryer/Core/Src/fnd_controller&apos; to &apos;fnd_controller.c&apos;" description="Rename resource &apos;fnd_controller&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="Core/Src/fnd_controller" name="fnd_controller.c" stamp="1716194887879" updateReferences="true"/>&#x0A;<refactoring comment="Rename resource &apos;dryer/Core/Src/fnd_controller&apos; to &apos;fnd_controller.h&apos;" description="Rename resource &apos;fnd_controller&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="Core/Src/fnd_controller" name="fnd_controller.h" stamp="1716194933773" updateReferences="true"/>
+</session>

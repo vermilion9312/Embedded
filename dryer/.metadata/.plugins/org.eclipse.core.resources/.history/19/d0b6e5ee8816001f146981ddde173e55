@@ -1,0 +1,22 @@
+
+
+
+
+
+
+void send(uint8_t x)
+{
+	for (int i = 8; i >= 1; i--)
+	{
+		if (x & 0x80)
+		{
+			HAL_GPIO_WritePin(GPIOx, GPIO_Pin, PinState)
+		}
+		else
+		{
+
+		}
+		x <<= 1;
+
+	}
+}

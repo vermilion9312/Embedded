@@ -1,0 +1,10 @@
+09:14:02 **** Incremental Build of configuration Debug for project coffee_machine ****
+make -j12 all 
+arm-none-eabi-size  coffee_machine.elf 
+   text	   data	    bss	    dec	    hex	filename
+     96	      0	   1568	   1664	    680	coffee_machine.elf
+Finished building: default.size.stdout
+ 
+
+09:14:02 Build Finished. 0 errors, 0 warnings. (took 263ms)
+
